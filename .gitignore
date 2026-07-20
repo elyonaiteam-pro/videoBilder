@@ -1,0 +1,25 @@
+.env
+videobilder.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+cache/*
+!cache/.gitkeep
+logs/*
+!logs/.gitkeep
+assets/downloaded/*
+!assets/downloaded/.gitkeep
+assets/generated/*
+!assets/generated/.gitkeep
+
+# Неиспользуемые побочные продукты конвертации стикеров (см. scripts/convert_stickers.py) —
+# рендерер использует new_main_assets/validstikers/*.gif, эти каталоги не нужны в репо.
+new_main_assets/stickers_apng/
+new_main_assets/stickers_webp/
+
+# Секреты, скачанные локально (JSON-ключ сервисного аккаунта и т.п.)
+*.json.key
+elyon-ai-by-elyon-team-*.json

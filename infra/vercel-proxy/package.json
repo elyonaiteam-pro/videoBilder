@@ -1,0 +1,6 @@
+{
+  "name": "videobilder-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Прокси Telegram Bot API для videobilder на Hugging Face Spaces (обход исходящего фаервола HF)."
+}
