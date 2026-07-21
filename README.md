@@ -14,12 +14,13 @@ Edge TTS, все визуальные материалы (фоны, стикер
 - ✅ Фаза 2 — ElevenLabs TTS (fallback → Edge TTS), Gemini 3
 - ✅ Фаза 3 — FSM-диалог (`bot/handlers.py`, `bot/states.py`), Gemini-сценарист
   и подбор стикеров (`services/llm.py`)
-- ✅ Фаза 4 — ffmpeg-сборка готового видео (`video_generation/renderer.py`)
-- ✅ Инфраструктура — деплой на Google Cloud Run + доставка видео через
-  Google Drive (`bot/delivery.py`). См. `README_CLOUDRUN_DEPLOY.md`.
-  (`README_HF_DEPLOY.md`/`infra/vercel-proxy/` — от изначального плана деплоя
-  на Hugging Face Spaces, оставлены на случай, если понадобится вернуться —
-  HF в моменте закрыли бесплатный Docker SDK.)
+- ✅ Фаза 4 — ffmpeg-сборка готового видео, RAM-экономная поэтапная схема
+  под free tier (`video_generation/renderer.py`)
+- ✅ Инфраструктура — деплой на **Render** (Web Service, Docker) + доставка
+  видео через Google Drive (`bot/delivery.py`). См. `README_RENDER_DEPLOY.md`.
+  (Cloud Run не подошёл — GCP billing заблокирован для РФ; HF Spaces закрыли
+  бесплатный Docker SDK. `README_CLOUDRUN_DEPLOY.md` / `README_HF_DEPLOY.md` /
+  `infra/vercel-proxy/` оставлены в репо на случай, если понадобится вернуться.)
 
 ## Диалог бота
 
@@ -30,7 +31,7 @@ Edge TTS, все визуальные материалы (фоны, стикер
 ## Архитектура
 
 ```text
-/bot                 FSM-хендлеры, main.py (webhook на Cloud Run / polling локально), delivery.py (Google Drive)
+/bot                 FSM-хендлеры, main.py (webhook на Render / polling локально), delivery.py (Google Drive)
 /config              Settings (pydantic-settings)
 /services            models.py (Pydantic-схемы), llm.py (Gemini), history.py (SQLite)
 /video_generation    pipeline.py (TTS по сценам + сборка запроса), renderer.py (ffmpeg-сборка)
@@ -38,7 +39,7 @@ Edge TTS, все визуальные материалы (фоны, стикер
 /assets              library.py (реестр new_main_assets/), provider.py (Old Era, больше не используется)
 /templates           20 шаблонных идей
 /new_main_assets     ВСЕ материалы для роликов: фоны, стикеры, музыка, баннеры
-/infra/vercel-proxy  прокси Telegram API (не нужен на Cloud Run, оставлен про запас)
+/infra/vercel-proxy  прокси Telegram API (не нужен на Render, оставлен про запас)
 ```
 
 ## Локальный запуск (Windows, polling-режим)
@@ -51,8 +52,7 @@ pip install -e .
 python -m bot.main
 ```
 
-## Деплой на Google Cloud Run
+## Деплой на Render
 
-См. `README_CLOUDRUN_DEPLOY.md` — пошагово: включение API, первый деплой,
-переменные окружения/секреты, регистрация вебхука, команды для ручного
-включения/выключения бота.
+См. `README_RENDER_DEPLOY.md` — пошагово: создание Web Service, переменные
+окружения/секреты, регистрация вебхука, ручное включение/выключение бота.
