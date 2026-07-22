@@ -1,14 +1,11 @@
 """
-bot/main.py — вебхук на Google Cloud Run (или polling локально).
+bot/main.py — вебхук на Render (или polling локально).
 
 Режим определяется автоматически:
   • PUBLIC_BASE_URL задан → webhook-режим (aiohttp web-сервер на PORT,
-    Cloud Run сам назначает порт через переменную окружения, обычно 8080).
-    Cloud Run НЕ блокирует исходящие запросы к api.telegram.org, поэтому
+    Render сам назначает порт через переменную окружения, обычно 10000).
+    Render НЕ блокирует исходящие запросы к api.telegram.org, поэтому
     TG_PROXY_URL обычно не нужен (оставлен на случай другой платформы).
-    Cloud Run масштабируется до нуля, когда нет входящих запросов — то есть
-    когда ботом никто не пользуется, он в буквальном смысле не потребляет
-    ресурсы и не стоит денег, а на входящий вебхук поднимается заново.
   • PUBLIC_BASE_URL пуст → обычный polling (локальный запуск на Windows).
 """
 import asyncio
@@ -20,7 +17,6 @@ from aiogram.client.telegram import TelegramAPIServer
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiohttp import web
 
-from bot.delivery import GoogleDriveDelivery
 from bot.handlers import router
 from config.settings import Settings, get_settings
 from services.history import HistoryRepository
@@ -49,11 +45,9 @@ def _build_dispatcher(settings: Settings) -> tuple[Dispatcher, HistoryRepository
 
     history = HistoryRepository(settings.sqlite_path)
     pipeline = VideoGenerationPipeline(settings, history)
-    delivery = GoogleDriveDelivery(settings)
 
     dp["pipeline"] = pipeline
     dp["history_repo"] = history
-    dp["delivery"] = delivery
     return dp, history
 
 

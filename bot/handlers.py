@@ -15,8 +15,10 @@ bot/handlers.py — New Era FSM-диалог.
 
 После каждого шага бот удаляет своё предыдущее сообщение с выбором.
 
-Готовое видео (Фаза 4, video_generation/renderer.py) заливается на Google Drive
-(bot/delivery.py) и отправляется в Telegram прямой ссылкой.
+Готовое видео (Фаза 4, video_generation/renderer.py) отправляется в Telegram
+напрямую (Render не блокирует исходящие запросы к Telegram, в отличие от HF —
+Google Drive как промежуточное звено больше не нужен, см. bot/delivery.py,
+он остаётся в репо неиспользуемым на случай переезда на платформу с фаерволом).
 """
 import logging
 from pathlib import Path
@@ -33,7 +35,6 @@ from aiogram.types import (
     Message,
 )
 
-from bot.delivery import GoogleDriveDelivery
 from bot.states import GenerationFlow
 from services.history import HistoryRepository
 from services.models import GenerationRequest
@@ -318,7 +319,6 @@ async def on_confirm_generation(
     callback: CallbackQuery,
     state: FSMContext,
     pipeline: VideoGenerationPipeline,
-    delivery: GoogleDriveDelivery,
 ) -> None:
     await callback.answer()
     action = callback.data.split(":", 1)[1]
@@ -360,11 +360,11 @@ async def on_confirm_generation(
         )
 
         if result.video_path and result.video_path.exists():
-            await status.edit_text("☁️ Заливаю на Google Drive и отправляю…")
-            url, file_id = await delivery.upload_video(result.video_path)
-            await callback.message.answer_video(video=url, caption=caption, parse_mode="HTML")
+            await status.edit_text("📤 Отправляю видео…")
+            await callback.message.answer_video(
+                video=FSInputFile(result.video_path), caption=caption, parse_mode="HTML"
+            )
             await status.delete()
-            await delivery.delete(file_id)
         else:
             await status.delete()
             text = (
